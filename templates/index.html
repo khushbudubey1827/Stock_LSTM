@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StockSense — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:     #050A0F;
+      --panel:  #0B1520;
+      --border: rgba(0,200,120,0.15);
+      --green:  #00C878;
+      --red:    #FF4D6A;
+      --gold:   #F5C842;
+      --text:   #E8F0EC;
+      --muted:  #5A7A6A;
+    }
+    html, body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: linear-gradient(rgba(0,200,120,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,120,0.03) 1px, transparent 1px);
+      background-size: 52px 52px;
+    }
+
+    /* NAVBAR */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 62px; padding: 0 40px;
+      background: rgba(5,10,15,0.95); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .brand-ico { width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,#00C878,#007A4C); display:flex; align-items:center; justify-content:center; }
+    .brand-ico svg { width:17px; height:17px; stroke:#fff; fill:none; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round; }
+    .brand-name { font-family:'Syne',sans-serif; font-size:19px; font-weight:800; color:var(--text); }
+    .brand-name b { color:var(--green); }
+    .nav-links { display:flex; align-items:center; gap:6px; }
+    .nav-link { padding:6px 14px; border-radius:8px; font-size:12px; font-weight:500; color:var(--muted); text-decoration:none; transition:all .2s; }
+    .nav-link:hover { color:var(--text); background:rgba(255,255,255,0.05); }
+    .nav-link.active { color:var(--green); background:rgba(0,200,120,0.08); border:1px solid rgba(0,200,120,0.2); }
+    .nav-r { display:flex; align-items:center; gap:14px; }
+    .upill { display:flex; align-items:center; gap:8px; background:rgba(0,200,120,0.07); border:1px solid var(--border); border-radius:30px; padding:5px 14px 5px 6px; font-size:13px; }
+    .av { width:26px; height:26px; border-radius:50%; background:linear-gradient(135deg,#00C878,#007A4C); display:flex; align-items:center; justify-content:center; font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:#050A0F; }
+    .btn-out { display:flex; align-items:center; gap:6px; padding:7px 16px; border-radius:9px; background:rgba(255,77,106,0.08); border:1px solid rgba(255,77,106,0.22); color:var(--red); font-size:12px; font-weight:500; text-decoration:none; transition:background .2s; }
+    .btn-out:hover { background:rgba(255,77,106,0.16); }
+    .btn-out svg { width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; }
+
+    /* TICKER */
+    .ticker { height:32px; overflow:hidden; display:flex; align-items:center; background:rgba(0,200,120,0.04); border-bottom:1px solid var(--border); }
+    .ttrack { display:flex; gap:52px; white-space:nowrap; animation:scroll 30s linear infinite; }
+    .ti { font-family:'Syne',sans-serif; font-size:10.5px; font-weight:600; letter-spacing:.07em; color:var(--muted); }
+    .ti .u { color:var(--green); } .ti .d { color:var(--red); }
+    @keyframes scroll { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+    /* WRAP */
+    .wrap { max-width:1160px; margin:0 auto; padding:36px 28px; position:relative; z-index:1; }
+
+    /* ALERTS */
+    .al { display:flex; align-items:center; gap:10px; padding:12px 18px; border-radius:10px; font-size:13px; margin-bottom:16px; }
+    .al-s { background:rgba(0,200,120,0.08); border:1px solid rgba(0,200,120,0.25); color:var(--green); }
+    .al-e { background:rgba(255,77,106,0.08); border:1px solid rgba(255,77,106,0.25); color:var(--red); }
+    .al-w { background:rgba(245,200,66,0.08); border:1px solid rgba(245,200,66,0.25); color:var(--gold); }
+
+    /* PAGE HEADER */
+    .ph { margin-bottom:28px; }
+    .ph h1 { font-family:'Syne',sans-serif; font-size:30px; font-weight:800; }
+    .ph h1 em { font-style:normal; color:var(--green); }
+    .ph p { font-size:13px; color:var(--muted); margin-top:5px; }
+
+    /* SEARCH */
+    .sc { background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:26px 28px; margin-bottom:32px; box-shadow:0 0 40px rgba(0,200,120,0.05); }
+    .slbl { font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:12px; }
+    .srow { display:flex; gap:10px; }
+    .siwrap { flex:1; position:relative; }
+    .siwrap svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); width:15px; height:15px; stroke:var(--muted); fill:none; stroke-width:2; stroke-linecap:round; pointer-events:none; }
+    .si { width:100%; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09); border-radius:11px; padding:13px 13px 13px 40px; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s,box-shadow .2s; }
+    .si::placeholder { color:var(--muted); }
+    .si:focus { border-color:rgba(0,200,120,0.45); box-shadow:0 0 0 3px rgba(0,200,120,0.09); }
+    .bgo { background:linear-gradient(135deg,#00C878,#007A4C); color:#050A0F; font-family:'Syne',sans-serif; font-size:13px; font-weight:700; border:none; border-radius:11px; padding:0 28px; cursor:pointer; white-space:nowrap; box-shadow:0 4px 18px rgba(0,200,120,0.28); transition:transform .15s,box-shadow .2s; }
+    .bgo:hover { transform:translateY(-2px); box-shadow:0 8px 26px rgba(0,200,120,.4); }
+    .tags { display:flex; gap:7px; flex-wrap:wrap; margin-top:12px; }
+    .tag { padding:4px 12px; border-radius:20px; font-size:11px; font-weight:500; color:var(--muted); background:rgba(255,255,255,0.03); border:1px solid var(--border); cursor:pointer; transition:all .18s; }
+    .tag:hover { color:var(--green); border-color:var(--green); background:rgba(0,200,120,0.06); }
+
+    /* LOADER */
+    .loader { display:none; position:fixed; inset:0; z-index:999; background:rgba(5,10,15,0.88); backdrop-filter:blur(8px); flex-direction:column; align-items:center; justify-content:center; gap:18px; }
+    .loader.on { display:flex; }
+    .spin { width:46px; height:46px; border-radius:50%; border:3px solid rgba(0,200,120,0.15); border-top-color:var(--green); animation:spin .7s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .lt { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--green); }
+    .ls { font-size:12px; color:var(--muted); }
+
+    /* STAT CARDS */
+    .srow4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+    .stc { background:var(--panel); border:1px solid var(--border); border-radius:13px; padding:18px 20px; transition:border-color .2s,transform .2s; }
+    .stc:hover { border-color:rgba(0,200,120,0.3); transform:translateY(-2px); }
+    .stl { font-size:9.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+    .stv { font-family:'Syne',sans-serif; font-size:24px; font-weight:800; }
+    .sts { font-size:11px; color:var(--muted); margin-top:3px; }
+
+    /* SECTION HEADING */
+    .sh { display:flex; align-items:center; gap:12px; font-family:'Syne',sans-serif; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin-bottom:16px; }
+    .sh::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* CHART CARDS */
+    .g2 { display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:24px; }
+    .g2 .s2 { grid-column:1/-1; }
+    .cc { background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color .2s,transform .2s; }
+    .cc:hover { border-color:rgba(0,200,120,0.3); transform:translateY(-2px); }
+    .cch { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .cct { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
+    .cc img { width:100%; display:block; }
+    .bdg { font-size:9.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; padding:3px 10px; border-radius:20px; }
+    .bg { background:rgba(0,200,120,0.1); color:var(--green); border:1px solid rgba(0,200,120,0.22); }
+    .by { background:rgba(245,200,66,0.1); color:var(--gold); border:1px solid rgba(245,200,66,0.22); }
+
+    /* TABLE */
+    .tcard { background:var(--panel); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:24px; }
+    .thead2 { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .ttitle { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; }
+    .tscroll { overflow-x:auto; }
+    .tcard table { width:100%; border-collapse:collapse; font-size:12.5px; }
+    .tcard thead tr { background:rgba(0,200,120,0.05); }
+    .tcard th { padding:11px 16px; text-align:left; white-space:nowrap; font-family:'Syne',sans-serif; font-size:10px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border); }
+    .tcard td { padding:10px 16px; color:var(--text); border-bottom:1px solid rgba(255,255,255,0.04); font-variant-numeric:tabular-nums; }
+    .tcard tr:last-child td { border-bottom:none; }
+    .tcard tr:hover td { background:rgba(0,200,120,0.03); }
+    .tcard .table { color:var(--text) !important; margin-bottom:0 !important; }
+    .tcard .table-bordered > :not(caption) > * { border-color:rgba(255,255,255,0.06) !important; }
+    .tcard .table-bordered { border:none !important; }
+
+    /* DOWNLOAD */
+    .bdl { display:inline-flex; align-items:center; gap:8px; background:rgba(0,200,120,0.08); border:1px solid rgba(0,200,120,0.25); color:var(--green); font-family:'Syne',sans-serif; font-size:13px; font-weight:700; padding:12px 22px; border-radius:11px; text-decoration:none; transition:background .2s,transform .15s; margin-bottom:40px; }
+    .bdl:hover { background:rgba(0,200,120,0.14); transform:translateY(-1px); }
+    .bdl svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* EMPTY */
+    .empty { text-align:center; padding:72px 20px; }
+    .ering { width:72px; height:72px; border-radius:50%; margin:0 auto 20px; background:rgba(0,200,120,0.06); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; }
+    .ering svg { width:30px; height:30px; stroke:var(--green); fill:none; stroke-width:1.5; stroke-linecap:round; }
+    .empty h2 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; margin-bottom:10px; }
+    .empty p { font-size:14px; color:var(--muted); max-width:340px; margin:0 auto; line-height:1.7; }
+
+    @media(max-width:720px){
+      nav{padding:0 16px;} .wrap{padding:24px 16px;}
+      .g2{grid-template-columns:1fr;} .srow4{grid-template-columns:1fr 1fr;}
+      .srow{flex-direction:column;} .bgo{padding:13px;}
+      .g2 .s2{grid-column:1;}
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="brand" href="/">
+    <div class="brand-ico"><svg viewBox="0 0 24 24"><polyline points="3,17 8,12 12,16 17,10 21,13"/></svg></div>
+    <div class="brand-name">Stock<b>Sense</b></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="{{ url_for('live_price_page') }}">Live Price</a>
+    <a class="nav-link" href="{{ url_for('next_day_page') }}">Next-Day</a>
+    <a class="nav-link" href="{{ url_for('sentiment_page') }}">Sentiment</a>
+  </div>
+  <div class="nav-r">
+    {% if user_name %}
+    <div class="upill">
+      <div class="av">{{ user_name[0].upper() }}</div>
+      <span>{{ user_name }}</span>
+    </div>
+    {% endif %}
+    <a href="/logout" class="btn-out">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </a>
+  </div>
+</nav>
+
+<div class="ticker"><div class="ttrack" id="tt"></div></div>
+
+<div class="loader" id="loader">
+  <div class="spin"></div>
+  <div class="lt">Running LSTM Model…</div>
+  <div class="ls">Downloading data &amp; generating predictions</div>
+</div>
+
+<div class="wrap">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for cat, msg in messages %}
+        <div class="al {% if cat == 'success' %}al-s{% elif cat == 'error' %}al-e{% else %}al-w{% endif %}">
+          {% if cat == 'success' %}✓{% elif cat == 'error' %}⚠{% else %}ℹ{% endif %} {{ msg }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="ph">
+    <h1>Stock Price <em>Prediction</em></h1>
+    <p>LSTM deep-learning · EMA signals · Jan 2000 → Jan 2026</p>
+  </div>
+
+  <div class="sc">
+    <div class="slbl">Enter Stock Ticker Symbol</div>
+    <form method="POST" id="pform">
+      <div class="srow">
+        <div class="siwrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="si" type="text" name="stock" id="sinp"
+                 placeholder="e.g. POWERGRID.NS · RELIANCE.NS · AAPL"
+                 value="{{ request.form.get('stock', 'POWERGRID.NS') }}"/>
+        </div>
+        <button class="bgo" type="submit" onclick="document.getElementById('loader').classList.add('on')">⚡ Predict Now</button>
+      </div>
+    </form>
+    <div class="tags">
+      <span class="tag" onclick="pick('POWERGRID.NS')">POWERGRID.NS</span>
+      <span class="tag" onclick="pick('RELIANCE.NS')">RELIANCE.NS</span>
+      <span class="tag" onclick="pick('TCS.NS')">TCS.NS</span>
+      <span class="tag" onclick="pick('INFY.NS')">INFY.NS</span>
+      <span class="tag" onclick="pick('HDFCBANK.NS')">HDFCBANK.NS</span>
+      <span class="tag" onclick="pick('AAPL')">AAPL</span>
+      <span class="tag" onclick="pick('TSLA')">TSLA</span>
+      <span class="tag" onclick="pick('NVDA')">NVDA</span>
+    </div>
+  </div>
+
+  {% if plot_path_ema_20_50 or data_desc %}
+
+    {% if data_desc %}
+    <div class="sh">Model Info</div>
+    <div class="srow4">
+      <div class="stc"><div class="stl">Model</div><div class="stv">LSTM</div><div class="sts">Deep Learning</div></div>
+      <div class="stc"><div class="stl">Train Split</div><div class="stv">70%</div><div class="sts">30% testing</div></div>
+      <div class="stc"><div class="stl">Data Range</div><div class="stv" style="font-size:18px">2000–2026</div><div class="sts">25+ years</div></div>
+      <div class="stc"><div class="stl">Lookback</div><div class="stv">100</div><div class="sts">days window</div></div>
+    </div>
+    {% endif %}
+
+    <div class="sh">EMA Analysis</div>
+    <div class="g2">
+      {% if plot_path_ema_20_50 %}
+      <div class="cc">
+        <div class="cch"><div class="cct">20 &amp; 50 Day EMA</div><span class="bdg bg">Short-Term</span></div>
+        <img src="{{ url_for('static', filename='ema_20_50.png') }}" alt="EMA 20 & 50"/>
+      </div>
+      {% endif %}
+      {% if plot_path_ema_100_200 %}
+      <div class="cc">
+        <div class="cch"><div class="cct">100 &amp; 200 Day EMA</div><span class="bdg by">Long-Term</span></div>
+        <img src="{{ url_for('static', filename='ema_100_200.png') }}" alt="EMA 100 & 200"/>
+      </div>
+      {% endif %}
+      {% if plot_path_prediction %}
+      <div class="cc s2">
+        <div class="cch"><div class="cct">LSTM Prediction vs Original Price</div><span class="bdg bg">AI Forecast</span></div>
+        <img src="{{ url_for('static', filename='stock_prediction.png') }}" alt="Prediction vs Original"/>
+      </div>
+      {% endif %}
+    </div>
+
+    {% if data_desc %}
+    <div class="sh">Descriptive Statistics · Jan 2000 – Jan 2026</div>
+    <div class="tcard">
+      <div class="thead2">
+        <div class="ttitle">Dataset Summary</div>
+        <span class="bdg bg">Yahoo Finance · Live</span>
+      </div>
+      <div class="tscroll">{{ data_desc | safe }}</div>
+    </div>
+    {% endif %}
+
+    {% if dataset_link %}
+    <a class="bdl" href="{{ url_for('download_file', filename=dataset_link.split('/')[-1]) }}" download>
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download Dataset (CSV)
+    </a>
+    {% endif %}
+
+  {% else %}
+  <div class="empty">
+    <div class="ering"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+    <h2>Ready to Predict</h2>
+    <p>Enter a stock ticker above and click <strong>Predict Now</strong> to run the LSTM model and view EMA charts, forecasts &amp; statistics.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  const tdata=[
+    {s:'POWERGRID.NS',p:'₹342.60',c:'+2.34%',u:1},{s:'RELIANCE.NS',p:'₹2,981',c:'+0.87%',u:1},
+    {s:'TCS.NS',p:'₹4,120',c:'-0.43%',u:0},{s:'INFY.NS',p:'₹1,893',c:'+1.12%',u:1},
+    {s:'HDFCBANK.NS',p:'₹1,742',c:'-0.21%',u:0},{s:'AAPL',p:'$213.4',c:'+0.55%',u:1},
+    {s:'TSLA',p:'$178.2',c:'-1.30%',u:0},{s:'NVDA',p:'$875.0',c:'+3.12%',u:1},
+    {s:'MSFT',p:'$415.7',c:'+0.38%',u:1},{s:'GOOGL',p:'$175.3',c:'-0.19%',u:0},
+  ];
+  const tr=document.getElementById('tt');
+  [...tdata,...tdata].forEach(d=>{
+    const el=document.createElement('span');
+    el.className='ti';
+    el.innerHTML=`${d.s} <span class="${d.u?'u':'d'}">${d.p} ${d.c}</span>`;
+    tr.appendChild(el);
+  });
+  function pick(v){ document.getElementById('sinp').value=v; }
+</script>
+</body>
+</html>

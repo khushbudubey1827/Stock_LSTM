@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StockSense — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:     #050A0F;
+      --panel:  #0B1520;
+      --border: rgba(0,200,120,0.18);
+      --green:  #00C878;
+      --green2: #00FF9D;
+      --red:    #FF4D6A;
+      --gold:   #F5C842;
+      --text:   #E8F0EC;
+      --muted:  #6B8A7A;
+      --glow:   0 0 30px rgba(0,200,120,0.25);
+    }
+
+    html, body { height: 100%; font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,120,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,120,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none; z-index: 0;
+    }
+
+    /* ticker */
+    .ticker-bar {
+      position: fixed; top: 0; left: 0; right: 0; height: 36px;
+      background: rgba(0,200,120,0.06);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden; display: flex; align-items: center; z-index: 100;
+    }
+    .ticker-track { display: flex; gap: 48px; white-space: nowrap; animation: ticker 28s linear infinite; }
+    .ticker-item { font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: var(--muted); }
+    .ticker-item .up   { color: var(--green); }
+    .ticker-item .down { color: var(--red); }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* layout */
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative; z-index: 1;
+      padding-top: 36px;
+    }
+
+    /* left panel */
+    .left-panel {
+      display: flex; flex-direction: column;
+      justify-content: center; padding: 60px 64px;
+      position: relative; overflow: hidden;
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute; top: 10%; right: -80px;
+      width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,200,120,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .brand { display: flex; align-items: center; gap: 10px; margin-bottom: 56px; }
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--green), #008B58);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    }
+    .brand-icon svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .brand-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+    .brand-name span { color: var(--green); }
+
+    .welcome-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.25);
+      border-radius: 20px; padding: 4px 14px;
+      font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 24px; width: fit-content;
+    }
+    .welcome-tag::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold); animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 48px; font-weight: 800; line-height: 1.05; margin-bottom: 20px;
+    }
+    .hero-title .accent  { color: var(--green); }
+    .hero-title .accent2 { color: var(--gold); }
+
+    .hero-sub {
+      font-size: 15px; font-weight: 300; line-height: 1.7;
+      color: var(--muted); max-width: 400px; margin-bottom: 44px;
+    }
+
+    /* market cards */
+    .market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 440px; }
+    .mcard {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+      position: relative; overflow: hidden;
+      transition: border-color .2s, transform .2s;
+    }
+    .mcard:hover { border-color: rgba(0,200,120,0.4); transform: translateY(-2px); }
+    .mcard-sym  { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--muted); }
+    .mcard-price{ font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; margin: 4px 0; }
+    .mcard-chg  { font-size: 11px; font-weight: 500; }
+    .mcard-chg.up   { color: var(--green); }
+    .mcard-chg.down { color: var(--red); }
+    .mcard-bar { height: 3px; border-radius: 3px; margin-top: 12px; background: rgba(255,255,255,0.07); overflow: hidden; }
+    .mcard-fill { height: 100%; border-radius: 3px; }
+
+    /* mini sparklines */
+    .spark-mini { width: 100%; height: 32px; margin-top: 8px; }
+    .spark-mini path { fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* right panel */
+    .right-panel {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 64px;
+      border-left: 1px solid var(--border);
+      position: relative;
+    }
+    .right-panel::before {
+      content: '';
+      position: absolute; bottom: 5%; left: -80px;
+      width: 280px; height: 280px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,200,120,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .form-card {
+      width: 100%; max-width: 400px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), var(--glow);
+      animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+
+    .form-heading { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+    .form-sub     { font-size: 13px; color: var(--muted); margin-bottom: 36px; }
+    .form-sub a   { color: var(--green); text-decoration: none; }
+    .form-sub a:hover { text-decoration: underline; }
+
+    /* flash messages */
+    .flash {
+      padding: 12px 16px; border-radius: 10px; font-size: 13px;
+      margin-bottom: 20px; display: flex; align-items: center; gap: 8px;
+    }
+    .flash.error   { background: rgba(255,77,106,0.1); border: 1px solid rgba(255,77,106,0.3); color: var(--red); }
+    .flash.success { background: rgba(0,200,120,0.1); border: 1px solid rgba(0,200,120,0.3); color: var(--green); }
+    .flash.warning { background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.3); color: var(--gold); }
+
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: block; font-size: 11px; font-weight: 500;
+      letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 8px;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap .icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px; color: var(--muted); pointer-events: none;
+    }
+    .input-wrap input {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 13px 14px 13px 40px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif; font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .input-wrap input::placeholder { color: rgba(107,138,122,0.6); }
+    .input-wrap input:focus {
+      border-color: rgba(0,200,120,0.5);
+      box-shadow: 0 0 0 3px rgba(0,200,120,0.12);
+      background: rgba(0,200,120,0.05);
+    }
+
+    /* show/hide password toggle */
+    .toggle-pass {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; color: var(--muted);
+      background: none; border: none; padding: 0;
+      transition: color .2s;
+    }
+    .toggle-pass:hover { color: var(--green); }
+    .toggle-pass svg { width: 16px; height: 16px; }
+
+    .forgot { text-align: right; margin-top: -12px; margin-bottom: 20px; }
+    .forgot a { font-size: 12px; color: var(--muted); text-decoration: none; transition: color .2s; }
+    .forgot a:hover { color: var(--green); }
+
+    .remember-row { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    .remember-row input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--green); cursor: pointer; }
+    .remember-row label { font-size: 13px; color: var(--muted); cursor: pointer; }
+
+    .btn-login {
+      width: 100%;
+      background: linear-gradient(135deg, var(--green), #008B58);
+      color: #050A0F;
+      font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .04em;
+      border: none; border-radius: 12px; padding: 15px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 24px rgba(0,200,120,0.3);
+    }
+    .btn-login::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    }
+    .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,200,120,0.45); }
+    .btn-login:active { transform: translateY(0); }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 24px 0; font-size: 11px; color: var(--muted);
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .register-hint { text-align: center; font-size: 13px; color: var(--muted); margin-top: 20px; }
+    .register-hint a { color: var(--green); text-decoration: none; font-weight: 500; }
+
+    /* security badge */
+    .security-badge {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin-top: 24px; font-size: 11px; color: var(--muted);
+    }
+    .security-badge svg { width: 12px; height: 12px; color: var(--green); }
+
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { border-left: none; padding: 60px 24px; }
+    }
+
+    .left-panel > * { animation: fadeLeft .7s cubic-bezier(.22,1,.36,1) both; }
+    .left-panel > *:nth-child(1) { animation-delay:.05s }
+    .left-panel > *:nth-child(2) { animation-delay:.12s }
+    .left-panel > *:nth-child(3) { animation-delay:.18s }
+    .left-panel > *:nth-child(4) { animation-delay:.24s }
+    .left-panel > *:nth-child(5) { animation-delay:.30s }
+    @keyframes fadeLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+  </style>
+</head>
+<body>
+
+<!-- Ticker Bar -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<div class="page">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><polyline points="3,17 8,12 12,16 17,10 21,13"/></svg>
+      </div>
+      <div class="brand-name">Stock<span>Sense</span></div>
+    </div>
+
+    <div class="welcome-tag">Welcome Back</div>
+
+    <h1 class="hero-title">
+      Your Market<br>
+      <span class="accent">Intelligence</span><br>
+      <span class="accent2">Awaits</span>
+    </h1>
+
+    <p class="hero-sub">
+      Sign in to access your LSTM-powered stock predictions, real-time EMA charts, and personalized portfolio analytics.
+    </p>
+
+    <!-- Market Cards -->
+    <div class="market-grid">
+      <div class="mcard">
+        <div class="mcard-sym">POWERGRID.NS</div>
+        <div class="mcard-price">₹342.60</div>
+        <div class="mcard-chg up">▲ +2.34%</div>
+        <svg class="spark-mini" viewBox="0 0 100 32" preserveAspectRatio="none">
+          <path d="M0,28 C15,24 25,18 35,16 C45,14 55,20 65,15 C75,10 85,8 100,5" stroke="#00C878" opacity=".8"/>
+        </svg>
+        <div class="mcard-bar"><div class="mcard-fill" style="width:72%;background:var(--green)"></div></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-sym">RELIANCE.NS</div>
+        <div class="mcard-price">₹2,981</div>
+        <div class="mcard-chg up">▲ +0.87%</div>
+        <svg class="spark-mini" viewBox="0 0 100 32" preserveAspectRatio="none">
+          <path d="M0,20 C15,18 25,22 40,16 C55,10 65,14 80,10 C90,7 95,9 100,7" stroke="#00C878" opacity=".8"/>
+        </svg>
+        <div class="mcard-bar"><div class="mcard-fill" style="width:58%;background:var(--green)"></div></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-sym">TCS.NS</div>
+        <div class="mcard-price">₹4,120</div>
+        <div class="mcard-chg down">▼ −0.43%</div>
+        <svg class="spark-mini" viewBox="0 0 100 32" preserveAspectRatio="none">
+          <path d="M0,10 C15,12 30,8 45,14 C60,20 70,18 85,22 C92,24 96,26 100,28" stroke="#FF4D6A" opacity=".8"/>
+        </svg>
+        <div class="mcard-bar"><div class="mcard-fill" style="width:44%;background:var(--red)"></div></div>
+      </div>
+      <div class="mcard">
+        <div class="mcard-sym">INFY.NS</div>
+        <div class="mcard-price">₹1,893</div>
+        <div class="mcard-chg up">▲ +1.12%</div>
+        <svg class="spark-mini" viewBox="0 0 100 32" preserveAspectRatio="none">
+          <path d="M0,22 C20,20 30,15 50,12 C65,10 75,13 90,8 C95,6 98,5 100,4" stroke="#00C878" opacity=".8"/>
+        </svg>
+        <div class="mcard-bar"><div class="mcard-fill" style="width:63%;background:var(--green)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: Login Form -->
+  <div class="right-panel">
+    <div class="form-card">
+      <div class="form-heading">Sign In</div>
+      <div class="form-sub">New here? <a href="/register">Create a free account →</a></div>
+
+      <!-- Flask flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">
+              {% if category == 'error' %}⚠{% elif category == 'success' %}✓{% else %}ℹ{% endif %}
+              {{ message }}
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="/login">
+        <div class="field">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <input type="email" name="email" placeholder="your@email.com" autocomplete="email" required/>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <input type="password" id="passInput" name="password" placeholder="Your password" autocomplete="current-password" required/>
+            <button type="button" class="toggle-pass" onclick="togglePass()" id="toggleBtn">
+              <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="forgot"><a href="#">Forgot password?</a></div>
+
+        <div class="remember-row">
+          <input type="checkbox" id="remember" name="remember"/>
+          <label for="remember">Keep me signed in</label>
+        </div>
+
+        <button type="submit" class="btn-login">Sign In to StockSense →</button>
+      </form>
+
+      <div class="divider">or</div>
+
+      <div class="register-hint">
+        Don't have an account? <a href="/register">Register now</a>
+      </div>
+
+      <div class="security-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        256-bit encrypted · Secured by Flask sessions
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ticker */
+  const tickers = [
+    {sym:'POWERGRID.NS',price:'₹342.60',chg:'+2.34%',up:true},
+    {sym:'RELIANCE.NS', price:'₹2,981', chg:'+0.87%',up:true},
+    {sym:'TCS.NS',      price:'₹4,120', chg:'-0.43%',up:false},
+    {sym:'INFY.NS',     price:'₹1,893', chg:'+1.12%',up:true},
+    {sym:'HDFCBANK.NS', price:'₹1,742', chg:'-0.21%',up:false},
+    {sym:'AAPL',        price:'$213.4', chg:'+0.55%',up:true},
+    {sym:'TSLA',        price:'$178.2', chg:'-1.30%',up:false},
+    {sym:'NVDA',        price:'$875.0', chg:'+3.12%',up:true},
+    {sym:'MSFT',        price:'$415.7', chg:'+0.38%',up:true},
+    {sym:'GOOGL',       price:'$175.3', chg:'-0.19%',up:false},
+  ];
+  const track = document.getElementById('tickerTrack');
+  [...tickers,...tickers].forEach(t => {
+    const s = document.createElement('span');
+    s.className = 'ticker-item';
+    s.innerHTML = `${t.sym} <span class="${t.up?'up':'down'}">${t.price} ${t.chg}</span>`;
+    track.appendChild(s);
+  });
+
+  /* password toggle */
+  function togglePass() {
+    const inp = document.getElementById('passInput');
+    const icon = document.getElementById('eyeIcon');
+    if (inp.type === 'password') {
+      inp.type = 'text';
+      icon.innerHTML = `<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+    } else {
+      inp.type = 'password';
+      icon.innerHTML = `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`;
+    }
+  }
+</script>
+</body>
+</html>

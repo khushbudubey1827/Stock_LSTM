@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StockSense — Live Price</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#050A0F;--panel:#0B1520;--panel2:#0F1C2A;--border:rgba(0,200,120,0.15);--green:#00C878;--red:#FF4D6A;--gold:#F5C842;--text:#E8F0EC;--muted:#5A7A6A;}
+    html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(0,200,120,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,200,120,0.025) 1px,transparent 1px);background-size:48px 48px}
+    nav{position:sticky;top:0;z-index:100;height:60px;padding:0 36px;background:rgba(5,10,15,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-ico{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#00C878,#007A4C);display:flex;align-items:center;justify-content:center}
+    .brand-ico svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)}
+    .brand-name b{color:var(--green)}
+    .nav-links{display:flex;align-items:center;gap:6px}
+    .nav-link{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .2s}
+    .nav-link:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+    .nav-link.active{color:var(--green);background:rgba(0,200,120,0.08);border:1px solid rgba(0,200,120,0.2)}
+    .upill{display:flex;align-items:center;gap:8px;background:rgba(0,200,120,0.07);border:1px solid var(--border);border-radius:30px;padding:5px 14px 5px 6px;font-size:13px}
+    .av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#00C878,#007A4C);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#050A0F}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .ticker{height:30px;overflow:hidden;display:flex;align-items:center;background:rgba(0,200,120,0.03);border-bottom:1px solid var(--border)}
+    .ttrack{display:flex;gap:52px;white-space:nowrap;animation:scroll 28s linear infinite}
+    .ti{font-family:'Syne',sans-serif;font-size:10px;font-weight:600;letter-spacing:.07em;color:var(--muted)}
+    .ti .u{color:var(--green)}.ti .d{color:var(--red)}
+    @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .wrap{max-width:1100px;margin:0 auto;padding:40px 28px;position:relative;z-index:1}
+    .ph{margin-bottom:28px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .ph-left h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+    .ph-left h1 em{font-style:normal;color:var(--green)}
+    .ph-left p{font-size:13px;color:var(--muted);margin-top:5px}
+    .refresh-badge{display:flex;align-items:center;gap:8px;background:rgba(0,200,120,0.07);border:1px solid rgba(0,200,120,0.2);border-radius:20px;padding:6px 14px;font-size:12px;color:var(--green)}
+    .rdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:rpulse 1.5s ease-in-out infinite}
+    @keyframes rpulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .sc{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:26px 28px;margin-bottom:28px}
+    .slbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .srow{display:flex;gap:10px}
+    .siwrap{flex:1;position:relative;max-width:500px}
+    .siwrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;pointer-events:none}
+    .si{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:11px;padding:13px 13px 13px 40px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+    .si::placeholder{color:var(--muted)}
+    .si:focus{border-color:rgba(0,200,120,0.45);box-shadow:0 0 0 3px rgba(0,200,120,0.09)}
+    .bgo{background:linear-gradient(135deg,#00C878,#007A4C);color:#050A0F;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:11px;padding:0 24px;cursor:pointer;box-shadow:0 4px 18px rgba(0,200,120,0.28);transition:transform .15s}
+    .bgo:hover{transform:translateY(-2px)}
+    .tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;color:var(--muted);background:rgba(255,255,255,0.03);border:1px solid var(--border);cursor:pointer;transition:all .18s}
+    .tag:hover{color:var(--green);border-color:var(--green);background:rgba(0,200,120,0.06)}
+    /* Flash */
+    .al{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:10px;font-size:13px;margin-bottom:16px}
+    .al-e{background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.25);color:var(--red)}
+    /* Main Price Card */
+    .main-price-card{background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:36px 40px;margin-bottom:24px;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(0,200,120,0.08)}
+    .main-price-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--green),rgba(0,200,120,0.3),transparent)}
+    .mpc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px}
+    .mpc-sym{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .mpc-price{font-family:'Syne',sans-serif;font-size:56px;font-weight:800;line-height:1;letter-spacing:-.02em}
+    .mpc-change{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:16px;font-weight:600}
+    .mpc-change.up{color:var(--green)}.mpc-change.down{color:var(--red)}
+    .mpc-live{display:flex;flex-direction:column;align-items:center;gap:6px}
+    .live-ring{width:48px;height:48px;border-radius:50%;border:2px solid rgba(0,200,120,0.3);display:flex;align-items:center;justify-content:center;animation:ringpulse 2s ease-in-out infinite}
+    @keyframes ringpulse{0%,100%{border-color:rgba(0,200,120,0.3);box-shadow:0 0 0 0 rgba(0,200,120,0.2)}50%{border-color:rgba(0,200,120,0.8);box-shadow:0 0 0 8px rgba(0,200,120,0)}}
+    .live-dot2{width:16px;height:16px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:dpulse 1.5s ease-in-out infinite}
+    @keyframes dpulse{0%,100%{transform:scale(1)}50%{transform:scale(.7)}}
+    .live-txt{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--green)}
+    .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}
+    .sg-card{background:var(--panel2);border:1px solid var(--border);border-radius:13px;padding:16px 18px;transition:border-color .2s,transform .2s}
+    .sg-card:hover{border-color:rgba(0,200,120,0.3);transform:translateY(-2px)}
+    .sg-lbl{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .sg-val{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+    .sg-val.up{color:var(--green)}.sg-val.down{color:var(--red)}.sg-val.neutral{color:var(--text)}
+    .sg-sub{font-size:10px;color:var(--muted);margin-top:3px}
+    /* Chart */
+    .chart-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:24px}
+    .chart-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .chart-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+    .chart-body{background:var(--panel2)}
+    .chart-body svg{width:100%;height:180px;display:block}
+    .ohlc-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border)}
+    .ohlc-cell{background:var(--panel);padding:14px 20px;text-align:center}
+    .ohlc-lbl{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+    .ohlc-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+    /* Empty */
+    .empty{text-align:center;padding:72px 20px;background:var(--panel);border:1px solid var(--border);border-radius:16px}
+    .empty h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
+    .empty p{color:var(--muted);font-size:13px}
+    .ering{width:64px;height:64px;border-radius:50%;background:rgba(0,200,120,0.08);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+    .ering svg{width:26px;height:26px;stroke:var(--green);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+    .update-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(0,200,120,0.04);border:1px solid var(--border);border-radius:12px;padding:12px 20px;margin-top:24px;font-size:12px;color:var(--muted)}
+    .update-bar span{color:var(--green);font-weight:600}
+    @media(max-width:800px){.stats-grid{grid-template-columns:repeat(3,1fr)}.mpc-price{font-size:40px}.ohlc-row{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="{{ url_for('index') }}">
+    <div class="brand-ico"><svg viewBox="0 0 24 24"><polyline points="3,17 8,12 12,16 17,10 21,13"/></svg></div>
+    <div class="brand-name">Stock<b>Sense</b></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link active" href="{{ url_for('live_price_page') }}">Live Price</a>
+    <a class="nav-link" href="{{ url_for('next_day_page') }}">Next-Day</a>
+    <a class="nav-link" href="{{ url_for('sentiment_page') }}">Sentiment</a>
+  </div>
+  <div class="nav-right">
+    <div class="upill"><div class="av">{{ user_name[0] | upper }}</div><span>{{ user_name }}</span></div>
+    <a href="{{ url_for('index') }}" style="font-size:12px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:9px">← Dashboard</a>
+  </div>
+</nav>
+
+<div class="ticker"><div class="ttrack" id="tt"></div></div>
+
+<div class="wrap">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="al al-e">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="ph">
+    <div class="ph-left">
+      <h1>Live Price <em>Widget</em></h1>
+      <p>Real-time market data via yfinance · Enter a ticker and fetch live price</p>
+    </div>
+    {% if live_data %}<div class="refresh-badge"><div class="rdot"></div>Live Data Loaded</div>{% endif %}
+  </div>
+
+  <!-- Search Form -->
+  <div class="sc">
+    <div class="slbl">Enter Stock Ticker Symbol</div>
+    <form method="POST" action="{{ url_for('live_price_page') }}">
+      <div class="srow">
+        <div class="siwrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="si" name="stock" id="sinp" type="text" placeholder="e.g. POWERGRID.NS, AAPL, TSLA…"
+            value="{{ stock or '' }}"/>
+        </div>
+        <button type="submit" class="bgo">Get Live Price</button>
+      </div>
+    </form>
+    <div class="tags">
+      <span class="tag" onclick="pick('POWERGRID.NS')">POWERGRID.NS</span>
+      <span class="tag" onclick="pick('RELIANCE.NS')">RELIANCE.NS</span>
+      <span class="tag" onclick="pick('TCS.NS')">TCS.NS</span>
+      <span class="tag" onclick="pick('INFY.NS')">INFY.NS</span>
+      <span class="tag" onclick="pick('HDFCBANK.NS')">HDFCBANK.NS</span>
+      <span class="tag" onclick="pick('AAPL')">AAPL</span>
+      <span class="tag" onclick="pick('TSLA')">TSLA</span>
+      <span class="tag" onclick="pick('NVDA')">NVDA</span>
+    </div>
+  </div>
+
+  {% if live_data %}
+  <!-- Main Price Card -->
+  <div class="main-price-card">
+    <div class="mpc-top">
+      <div>
+        <div class="mpc-sym">{{ live_data.ticker }} · Market Data</div>
+        <div class="mpc-price">{{ live_data.price }}</div>
+        <div class="mpc-change {{ live_data.direction }}">
+          {% if live_data.direction == 'up' %}▲{% else %}▼{% endif %}
+          {{ '+' if live_data.change >= 0 else '' }}{{ live_data.change }}
+          ({{ '+' if live_data.change_pct >= 0 else '' }}{{ live_data.change_pct }}%) today
+        </div>
+      </div>
+      <div class="mpc-live">
+        <div class="live-ring"><div class="live-dot2"></div></div>
+        <div class="live-txt">Live</div>
+      </div>
+    </div>
+    <div class="stats-grid">
+      <div class="sg-card"><div class="sg-lbl">Open</div><div class="sg-val neutral">{{ live_data.open }}</div><div class="sg-sub">Today</div></div>
+      <div class="sg-card"><div class="sg-lbl">High</div><div class="sg-val up">{{ live_data.high }}</div><div class="sg-sub">Intraday</div></div>
+      <div class="sg-card"><div class="sg-lbl">Low</div><div class="sg-val down">{{ live_data.low }}</div><div class="sg-sub">Intraday</div></div>
+      <div class="sg-card"><div class="sg-lbl">Prev Close</div><div class="sg-val neutral">{{ live_data.prev_close }}</div><div class="sg-sub">Yesterday</div></div>
+      <div class="sg-card"><div class="sg-lbl">52W High</div><div class="sg-val up">{{ live_data.high_52w }}</div><div class="sg-sub">1 Year</div></div>
+      <div class="sg-card"><div class="sg-lbl">52W Low</div><div class="sg-val down">{{ live_data.low_52w }}</div><div class="sg-sub">1 Year</div></div>
+    </div>
+  </div>
+
+  <!-- Intraday Chart -->
+ {% if live_data and live_data.chart_prices %}
+  <div class="chart-card">
+    <div class="chart-head"><div class="chart-title">Intraday Price Movement (5-min)</div></div>
+    <div class="chart-body">
+      <svg viewBox="0 0 1000 180" preserveAspectRatio="none" id="priceChart">
+        <defs>
+          <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#00C878" stop-opacity=".2"/>
+            <stop offset="100%" stop-color="#00C878" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path id="chartArea" fill="url(#cg)"/>
+        <path id="chartLine" fill="none" stroke="#00C878" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="ohlc-row">
+      <div class="ohlc-cell"><div class="ohlc-lbl">Open</div><div class="ohlc-val">{{ live_data.open }}</div></div>
+      <div class="ohlc-cell"><div class="ohlc-lbl">High</div><div class="ohlc-val" style="color:var(--green)">{{ live_data.high }}</div></div>
+      <div class="ohlc-cell"><div class="ohlc-lbl">Low</div><div class="ohlc-val" style="color:var(--red)">{{ live_data.low }}</div></div>
+      <div class="ohlc-cell"><div class="ohlc-lbl">Last</div><div class="ohlc-val">{{ live_data.price }}</div></div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="update-bar">
+    <span>Source: Yahoo Finance (yfinance)</span>
+    <div>Auto-refresh: <span id="countdown">30s</span> · <span id="updateTime"></span></div>
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <div class="ering"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg></div>
+    <h2>Enter a Ticker to Get Started</h2>
+    <p>Type a stock symbol above and click <strong>Get Live Price</strong> to load real-time data.</p>
+  </div>
+  {% endif %}
+
+</div>
+
+<script>
+  const td=[
+    {s:'POWERGRID.NS',p:'₹342.60',c:'+2.34%',u:1},{s:'RELIANCE.NS',p:'₹2,981',c:'+0.87%',u:1},
+    {s:'TCS.NS',p:'₹4,120',c:'-0.43%',u:0},{s:'INFY.NS',p:'₹1,893',c:'+1.12%',u:1},
+    {s:'HDFCBANK.NS',p:'₹1,742',c:'-0.21%',u:0},{s:'AAPL',p:'$213.4',c:'+0.55%',u:1},
+    {s:'TSLA',p:'$178.2',c:'-1.30%',u:0},{s:'NVDA',p:'$875.0',c:'+3.12%',u:1},
+  ];
+  const tr=document.getElementById('tt');
+  [...td,...td].forEach(d=>{const el=document.createElement('span');el.className='ti';el.innerHTML=`${d.s} <span class="${d.u?'u':'d'}">${d.p} ${d.c}</span>`;tr.appendChild(el);});
+
+  function pick(v){document.getElementById('sinp').value=v;}
+
+  // Draw chart from real data
+  // Build chart from real data
+  const rawChartData = '{{ (live_data.chart_prices if live_data and live_data.chart_prices else []) | tojson }}';
+  const chartPrices = JSON.parse(rawChartData);
+
+if(chartPrices.length > 1){
+  const W=1000,H=180,pad=12;
+  const min=Math.min(...chartPrices)-1, max=Math.max(...chartPrices)+1;
+
+  const pts=chartPrices.map((p,i)=>{
+    const x=(i/(chartPrices.length-1))*W;
+    const y=H-pad-((p-min)/(max-min))*(H-2*pad);
+    return `${x},${y}`;
+  });
+
+  const lineD=`M ${pts.join(' L ')}`;
+  const areaD=`M 0 ${H} L ${pts.join(' L ')} L ${W} ${H} Z`;
+
+  document.getElementById('chartLine').setAttribute('d',lineD);
+  document.getElementById('chartArea').setAttribute('d',areaD);
+}
+
+  // Countdown + auto-refresh
+  let cd=30;
+  document.getElementById('updateTime') && (document.getElementById('updateTime').textContent=new Date().toLocaleTimeString());
+  setInterval(()=>{
+    cd--;
+    if(document.getElementById('countdown')) document.getElementById('countdown').textContent=cd+'s';
+    if(cd<=0){
+      const form=document.querySelector('form');
+      if(form) form.submit();
+    }
+  },1000);
+</script>
+</body>
+</html>

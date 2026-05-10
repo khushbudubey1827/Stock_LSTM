@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StockSense — Next-Day Prediction</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#060810;--panel:#0D1425;--panel2:#111A2E;--border:rgba(59,158,255,0.15);--blue:#3B9EFF;--green:#00C878;--red:#FF4D6A;--gold:#F5C842;--purple:#A855F7;--text:#E8EFF8;--muted:#4A6080;}
+    html,body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(59,158,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(59,158,255,0.025) 1px,transparent 1px);background-size:48px 48px}
+    nav{position:sticky;top:0;z-index:100;height:60px;padding:0 36px;background:rgba(6,8,16,0.97);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .brand-ico{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3B9EFF,#1A5FBF);display:flex;align-items:center;justify-content:center}
+    .brand-ico svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+    .brand-name{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--text)}
+    .brand-name b{color:var(--blue)}
+    .nav-links{display:flex;align-items:center;gap:6px}
+    .nav-link{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;color:var(--muted);text-decoration:none;transition:all .2s}
+    .nav-link:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+    .nav-link.active{color:var(--blue);background:rgba(59,158,255,0.08);border:1px solid rgba(59,158,255,0.2)}
+    .nav-right{display:flex;align-items:center;gap:12px}
+    .upill{display:flex;align-items:center;gap:8px;background:rgba(59,158,255,0.07);border:1px solid var(--border);border-radius:30px;padding:5px 14px 5px 6px;font-size:13px}
+    .av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#3B9EFF,#1A5FBF);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:#fff}
+    .ticker{height:30px;overflow:hidden;display:flex;align-items:center;background:rgba(59,158,255,0.03);border-bottom:1px solid var(--border)}
+    .ttrack{display:flex;gap:52px;white-space:nowrap;animation:scroll 28s linear infinite}
+    .ti{font-family:'Syne',sans-serif;font-size:10px;font-weight:600;letter-spacing:.07em;color:var(--muted)}
+    .ti .u{color:var(--green)}.ti .d{color:var(--red)}
+    @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    .wrap{max-width:1100px;margin:0 auto;padding:40px 28px;position:relative;z-index:1}
+    .ph{margin-bottom:28px}
+    .ph h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
+    .ph h1 em{font-style:normal;color:var(--blue)}
+    .ph p{font-size:13px;color:var(--muted);margin-top:5px}
+    .al{display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:10px;font-size:13px;margin-bottom:16px}
+    .al-e{background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.25);color:var(--red)}
+    .sc{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:26px 28px;margin-bottom:28px}
+    .slbl{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+    .srow{display:flex;gap:10px}
+    .siwrap{flex:1;position:relative;max-width:500px}
+    .siwrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--muted);fill:none;stroke-width:2;stroke-linecap:round;pointer-events:none}
+    .si{width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:11px;padding:13px 13px 13px 40px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .2s,box-shadow .2s}
+    .si::placeholder{color:var(--muted)}
+    .si:focus{border-color:rgba(59,158,255,0.45);box-shadow:0 0 0 3px rgba(59,158,255,0.09)}
+    .brun{background:linear-gradient(135deg,#3B9EFF,#1A5FBF);color:#fff;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;border:none;border-radius:11px;padding:0 24px;cursor:pointer;box-shadow:0 4px 18px rgba(59,158,255,0.28);transition:transform .15s}
+    .brun:hover{transform:translateY(-2px)}
+    .tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+    .tag{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:500;color:var(--muted);background:rgba(255,255,255,0.03);border:1px solid var(--border);cursor:pointer;transition:all .18s}
+    .tag:hover{color:var(--blue);border-color:var(--blue);background:rgba(59,158,255,0.06)}
+    /* Hero */
+    .hero-card{background:var(--panel);border:1px solid rgba(59,158,255,0.25);border-radius:20px;padding:36px 40px;margin-bottom:20px;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(59,158,255,0.08)}
+    .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--purple),transparent)}
+    .hero-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(59,158,255,0.1);border:1px solid rgba(59,158,255,0.25);border-radius:20px;padding:4px 12px;font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:16px}
+    .hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--blue);animation:blink 1.8s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+    .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center}
+    .hero-lbl{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+    .hero-price{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:var(--blue);line-height:1;letter-spacing:-.02em}
+    .hero-move{display:flex;align-items:center;gap:10px;margin-top:12px}
+    .hero-arrow{font-size:18px;font-weight:700}
+    .hero-arrow.up{color:var(--green)}.hero-arrow.down{color:var(--red)}
+    .hero-pct{font-family:'Syne',sans-serif;font-size:20px;font-weight:800}
+    .hero-pct.up{color:var(--green)}.hero-pct.down{color:var(--red)}
+    .hero-abs{font-size:14px;color:var(--muted)}
+    .hero-right{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+    .mini-card{background:var(--panel2);border:1px solid var(--border);border-radius:13px;padding:18px 20px}
+    .mc-lbl{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .mc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800}
+    .mc-sub{font-size:11px;color:var(--muted);margin-top:4px}
+    .signal-pill{display:inline-flex;align-items:center;gap:6px;font-family:'Syne',sans-serif;font-size:20px;font-weight:800;padding:6px 16px;border-radius:10px}
+    .sig-buy{color:var(--green);background:rgba(0,200,120,0.12);border:1px solid rgba(0,200,120,0.3)}
+    .sig-sell{color:var(--red);background:rgba(255,77,106,0.12);border:1px solid rgba(255,77,106,0.3)}
+    .sig-hold{color:var(--gold);background:rgba(245,200,66,0.12);border:1px solid rgba(245,200,66,0.3)}
+    /* Timeline */
+    .timeline-card{background:var(--panel);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px}
+    .tc-head{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+    .tc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700}
+    .tc-badge{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:rgba(59,158,255,0.1);color:var(--blue);border:1px solid rgba(59,158,255,0.22)}
+    .timeline{padding:20px 24px;display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+    .tday{text-align:center;padding:14px 8px;border-radius:12px;border:1px solid var(--border);background:var(--panel2);transition:transform .2s}
+    .tday:hover{transform:translateY(-3px);border-color:rgba(59,158,255,0.3)}
+    .tday.today-mark{border-color:rgba(59,158,255,0.5);background:rgba(59,158,255,0.08)}
+    .tday.pred-mark{border-color:rgba(0,200,120,0.5);background:rgba(0,200,120,0.08)}
+    .td-name{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+    .td-price{font-family:'Syne',sans-serif;font-size:13px;font-weight:800}
+    .td-chg{font-size:10px;margin-top:4px}
+    .td-chg.up{color:var(--green)}.td-chg.down{color:var(--red)}.td-chg.flat{color:var(--muted)}
+    .td-badge{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 6px;border-radius:6px;margin-top:6px;display:inline-block}
+    .tb-today{background:rgba(59,158,255,0.15);color:var(--blue)}
+    .tb-pred{background:rgba(0,200,120,0.12);color:var(--green)}
+    .tb-hist{background:rgba(255,255,255,0.05);color:var(--muted)}
+    /* Model Info */
+    .model-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+    .mg{background:var(--panel);border:1px solid var(--border);border-radius:13px;padding:18px 20px}
+    .mg-lbl{font-size:9.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+    .mg-val{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text)}
+    .mg-sub{font-size:11px;color:var(--muted);margin-top:3px}
+    /* Empty */
+    .empty{text-align:center;padding:72px 20px;background:var(--panel);border:1px solid var(--border);border-radius:16px}
+    .empty h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:8px}
+    .empty p{color:var(--muted);font-size:13px}
+    .ering{width:64px;height:64px;border-radius:50%;background:rgba(59,158,255,0.08);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+    .ering svg{width:26px;height:26px;stroke:var(--blue);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+    @media(max-width:800px){.hero-grid{grid-template-columns:1fr}.hero-right{grid-template-columns:1fr 1fr}.timeline{grid-template-columns:repeat(4,1fr)}.model-grid{grid-template-columns:repeat(2,1fr)}.hero-price{font-size:38px}}
+  </style>
+</head>
+<body>
+<nav>
+  <a class="brand" href="{{ url_for('index') }}">
+    <div class="brand-ico"><svg viewBox="0 0 24 24"><polyline points="3,17 8,12 12,16 17,10 21,13"/></svg></div>
+    <div class="brand-name">Stock<b>Sense</b></div>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link" href="{{ url_for('live_price_page') }}">Live Price</a>
+    <a class="nav-link active" href="{{ url_for('next_day_page') }}">Next-Day</a>
+    <a class="nav-link" href="{{ url_for('sentiment_page') }}">Sentiment</a>
+  </div>
+  <div class="nav-right">
+    <div class="upill"><div class="av">{{ user_name[0] | upper }}</div><span>{{ user_name }}</span></div>
+    <a href="{{ url_for('index') }}" style="font-size:12px;color:var(--muted);text-decoration:none;padding:7px 14px;border:1px solid var(--border);border-radius:9px">← Dashboard</a>
+  </div>
+</nav>
+
+<div class="ticker"><div class="ttrack" id="tt"></div></div>
+
+<div class="wrap">
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in messages %}
+      <div class="al al-e">{{ msg }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <div class="ph">
+    <h1>Next-Day <em>LSTM Forecast</em></h1>
+    <p>Deep learning prediction using 100-day lookback window · Your trained LSTM model</p>
+  </div>
+
+  <div class="sc">
+    <div class="slbl">Enter Stock Ticker Symbol</div>
+    <form method="POST" action="{{ url_for('next_day_page') }}">
+      <div class="srow">
+        <div class="siwrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input class="si" name="stock" id="sinp" type="text" placeholder="e.g. POWERGRID.NS, TCS.NS, AAPL…"
+            value="{{ stock or '' }}"/>
+        </div>
+        <button type="submit" class="brun">⚡ Run Prediction</button>
+      </div>
+    </form>
+    <div class="tags">
+      <span class="tag" onclick="pick('POWERGRID.NS')">POWERGRID.NS</span>
+      <span class="tag" onclick="pick('RELIANCE.NS')">RELIANCE.NS</span>
+      <span class="tag" onclick="pick('TCS.NS')">TCS.NS</span>
+      <span class="tag" onclick="pick('INFY.NS')">INFY.NS</span>
+      <span class="tag" onclick="pick('HDFCBANK.NS')">HDFCBANK.NS</span>
+      <span class="tag" onclick="pick('AAPL')">AAPL</span>
+      <span class="tag" onclick="pick('TSLA')">TSLA</span>
+      <span class="tag" onclick="pick('NVDA')">NVDA</span>
+    </div>
+  </div>
+
+  {% if prediction %}
+  <!-- Hero Prediction Card -->
+  <div class="hero-card">
+    <div class="hero-tag">LSTM Model Output · {{ stock }}</div>
+    <div class="hero-grid">
+      <div>
+        <div class="hero-lbl">Predicted Closing Price — Tomorrow</div>
+        <div class="hero-price">{{ prediction.price }}</div>
+        <div class="hero-move">
+          <span class="hero-arrow {{ 'up' if prediction.direction == 'UP' else 'down' }}">
+            {{ '▲' if prediction.direction == 'UP' else '▼' }}
+          </span>
+          <span class="hero-pct {{ 'up' if prediction.direction == 'UP' else 'down' }}">
+            {{ '+' if prediction.change_pct >= 0 else '' }}{{ prediction.change_pct }}%
+          </span>
+          <span class="hero-abs">({{ '+' if prediction.change >= 0 else '' }}{{ prediction.change }} from today)</span>
+        </div>
+        <div style="margin-top:18px;font-size:12px;color:var(--muted);line-height:1.7">
+          Based on last <strong style="color:var(--text)">100 days</strong> · Trained on <strong style="color:var(--text)">2000–2026</strong> data
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="mini-card">
+          <div class="mc-lbl">Today's Close</div>
+          <div class="mc-val">{{ prediction.last_price }}</div>
+          <div class="mc-sub">Base price</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-lbl">Signal</div>
+          <div class="signal-pill sig-{{ prediction.signal | lower }}">{{ prediction.signal }}</div>
+          <div class="mc-sub" style="margin-top:8px">
+            {% if prediction.signal == 'BUY' %}Rise &gt; 1%{% elif prediction.signal == 'SELL' %}Drop &gt; 1%{% else %}Within ±1%{% endif %}
+          </div>
+        </div>
+        <div class="mini-card" style="grid-column:1/-1">
+          <div class="mc-lbl">Expected Change</div>
+          <div class="{{ 'hero-pct up' if prediction.direction == 'UP' else 'hero-pct down' }}" style="font-size:28px;">
+            {{ '+' if prediction.change >= 0 else '' }}{{ prediction.change }}
+          </div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">Absolute price movement</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7-Day Timeline -->
+  {% if history_prices %}
+  <div class="timeline-card">
+    <div class="tc-head">
+      <div class="tc-title">Price Timeline</div>
+      <span class="tc-badge">Historical + Forecast</span>
+    </div>
+    <div class="timeline">
+      {% for item in history_prices %}
+      <div class="tday {% if loop.last %}today-mark{% endif %}">
+        <div class="td-name">{{ item.day }}</div>
+        <div class="td-price">{{ item.price }}</div>
+        <div class="td-badge {% if loop.last %}tb-today{% else %}tb-hist{% endif %}">
+          {% if loop.last %}TODAY{% else %}HIST{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      <!-- Tomorrow: predicted -->
+      <div class="tday pred-mark">
+        <div class="td-name">TMR</div>
+        <div class="td-price" style="color:var(--green)">{{ prediction.price }}</div>
+        <div class="td-chg {{ 'up' if prediction.direction == 'UP' else 'down' }}">
+          {{ '▲' if prediction.direction == 'UP' else '▼' }}{{ prediction.change_pct }}%
+        </div>
+        <div class="td-badge tb-pred">PRED</div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty">
+    <div class="ering"><svg viewBox="0 0 24 24"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96-.46L7 19V4.5A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 1 17 4.5v15a2.5 2.5 0 0 1-4.96-.46L12 19V4.5A2.5 2.5 0 0 1 14.5 2Z"/></svg></div>
+    <h2>Ready to Predict</h2>
+    <p>Enter a stock ticker above and click <strong>Run Prediction</strong> to get tomorrow's LSTM forecast.</p>
+  </div>
+  {% endif %}
+
+  <!-- Model Info (always visible) -->
+  <div class="model-grid" style="margin-top:20px">
+    <div class="mg"><div class="mg-lbl">Architecture</div><div class="mg-val">LSTM</div><div class="mg-sub">Long Short-Term Memory</div></div>
+    <div class="mg"><div class="mg-lbl">Lookback</div><div class="mg-val">100</div><div class="mg-sub">days input window</div></div>
+    <div class="mg"><div class="mg-lbl">Training Data</div><div class="mg-val" style="font-size:16px">2000–2026</div><div class="mg-sub">25+ years history</div></div>
+    <div class="mg"><div class="mg-lbl">Train / Test</div><div class="mg-val">70/30</div><div class="mg-sub">Percent split</div></div>
+  </div>
+
+</div>
+
+<script>
+  const td=[
+    {s:'POWERGRID.NS',p:'₹342.60',c:'+2.34%',u:1},{s:'RELIANCE.NS',p:'₹2,981',c:'+0.87%',u:1},
+    {s:'TCS.NS',p:'₹4,120',c:'-0.43%',u:0},{s:'INFY.NS',p:'₹1,893',c:'+1.12%',u:1},
+    {s:'HDFCBANK.NS',p:'₹1,742',c:'-0.21%',u:0},{s:'AAPL',p:'$213.4',c:'+0.55%',u:1},
+    {s:'TSLA',p:'$178.2',c:'-1.30%',u:0},{s:'NVDA',p:'$875.0',c:'+3.12%',u:1},
+  ];
+  const tr=document.getElementById('tt');
+  [...td,...td].forEach(d=>{const el=document.createElement('span');el.className='ti';el.innerHTML=`${d.s} <span class="${d.u?'u':'d'}">${d.p} ${d.c}</span>`;tr.appendChild(el);});
+  function pick(v){document.getElementById('sinp').value=v;}
+</script>
+</body>
+</html>

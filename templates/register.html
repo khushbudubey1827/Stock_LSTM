@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StockSense — Register</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #050A0F;
+      --panel:     #0B1520;
+      --border:    rgba(0,200,120,0.18);
+      --green:     #00C878;
+      --green2:    #00FF9D;
+      --red:       #FF4D6A;
+      --gold:      #F5C842;
+      --text:      #E8F0EC;
+      --muted:     #6B8A7A;
+      --glow:      0 0 30px rgba(0,200,120,0.25);
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── animated grid background ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,200,120,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,200,120,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── ticker strip ── */
+    .ticker-bar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 36px;
+      background: rgba(0,200,120,0.06);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+      display: flex; align-items: center;
+      z-index: 100;
+    }
+    .ticker-track {
+      display: flex; gap: 48px;
+      white-space: nowrap;
+      animation: ticker 28s linear infinite;
+    }
+    .ticker-item {
+      font-family: 'Syne', sans-serif;
+      font-size: 11px; font-weight: 600; letter-spacing: .08em;
+      color: var(--muted);
+    }
+    .ticker-item .up   { color: var(--green); }
+    .ticker-item .down { color: var(--red); }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    /* ── layout ── */
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative; z-index: 1;
+      padding-top: 36px;
+    }
+
+    /* ── left panel ── */
+    .left-panel {
+      display: flex; flex-direction: column;
+      justify-content: center; padding: 60px 64px;
+      position: relative; overflow: hidden;
+    }
+    .left-panel::after {
+      content: '';
+      position: absolute; top: 10%; right: -80px;
+      width: 320px; height: 320px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,200,120,0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 56px;
+    }
+    .brand-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, var(--green), #008B58);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-icon svg { width: 20px; height: 20px; fill: #fff; }
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 20px; font-weight: 800;
+      letter-spacing: .02em;
+    }
+    .brand-name span { color: var(--green); }
+
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0,200,120,0.1);
+      border: 1px solid rgba(0,200,120,0.25);
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 24px;
+      width: fit-content;
+    }
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%; background: var(--green);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 48px; font-weight: 800; line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    .hero-title .accent { color: var(--green); }
+    .hero-title .accent2 { color: var(--gold); }
+
+    .hero-sub {
+      font-size: 15px; font-weight: 300; line-height: 1.7;
+      color: var(--muted); max-width: 400px;
+      margin-bottom: 44px;
+    }
+
+    /* chart mockup */
+    .chart-mock {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      max-width: 440px;
+    }
+    .chart-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .chart-ticker { font-family:'Syne',sans-serif; font-size:13px; font-weight:700; color:var(--muted); }
+    .chart-price  { font-family:'Syne',sans-serif; font-size:28px; font-weight:800; }
+    .chart-change { font-size:12px; font-weight:500; color:var(--green); }
+    .chart-label  { font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; }
+
+    .sparkline-wrap { height: 72px; position: relative; overflow: hidden; }
+    svg.spark { width: 100%; height: 100%; }
+    .spark-area { fill: rgba(0,200,120,0.08); }
+    .spark-line { fill: none; stroke: var(--green); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+    .spark-pred { fill: none; stroke: var(--gold); stroke-width: 2; stroke-dasharray: 5,3; stroke-linecap: round; }
+
+    .legend {
+      display: flex; gap: 20px; margin-top: 14px;
+    }
+    .leg-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); }
+    .leg-dot { width:8px; height:8px; border-radius:50%; }
+
+    /* stats row */
+    .stats-row { display:flex; gap:20px; margin-top: 32px; }
+    .stat-card {
+      flex: 1;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 18px;
+    }
+    .stat-val { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
+    .stat-val.up   { color: var(--green); }
+    .stat-val.down { color: var(--red); }
+    .stat-lbl { font-size:10px; color:var(--muted); letter-spacing:.08em; text-transform:uppercase; margin-top:3px; }
+
+    /* ── right panel ── */
+    .right-panel {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px 64px;
+      border-left: 1px solid var(--border);
+      position: relative;
+    }
+    .right-panel::before {
+      content: '';
+      position: absolute; bottom: 5%; left: -80px;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,200,66,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .form-card {
+      width: 100%; max-width: 400px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 44px 40px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.5), var(--glow);
+    }
+
+    .form-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: 26px; font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .form-sub {
+      font-size: 13px; color: var(--muted); margin-bottom: 32px;
+    }
+    .form-sub a { color: var(--green); text-decoration: none; }
+    .form-sub a:hover { text-decoration: underline; }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .field { margin-bottom: 18px; }
+    .field label {
+      display: block;
+      font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .input-wrap { position: relative; }
+    .input-wrap .icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 16px; height: 16px;
+      color: var(--muted);
+      pointer-events: none;
+    }
+    .input-wrap input, .input-wrap select {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 12px 14px 12px 40px;
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .input-wrap.no-icon input,
+    .input-wrap.no-icon select { padding-left: 14px; }
+    .input-wrap input::placeholder { color: rgba(107,138,122,0.6); }
+    .input-wrap input:focus,
+    .input-wrap select:focus {
+      border-color: rgba(0,200,120,0.5);
+      box-shadow: 0 0 0 3px rgba(0,200,120,0.12);
+      background: rgba(0,200,120,0.05);
+    }
+    .input-wrap select option { background: #0B1520; color: var(--text); }
+
+    .strength-bar { height: 4px; border-radius: 4px; background: rgba(255,255,255,0.08); margin-top: 8px; overflow: hidden; }
+    .strength-fill { height: 100%; width: 0; border-radius: 4px; transition: width .4s, background .4s; }
+
+    .divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 10px 0 20px;
+      font-size: 11px; color: var(--muted);
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    .agree-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 22px;
+    }
+    .agree-row input[type=checkbox] {
+      width: 16px; height: 16px; margin-top: 2px;
+      accent-color: var(--green); cursor: pointer; flex-shrink: 0;
+    }
+    .agree-row label {
+      font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+    .agree-row label a { color: var(--green); text-decoration: none; }
+
+    .btn-register {
+      width: 100%;
+      background: linear-gradient(135deg, var(--green), #008B58);
+      color: #050A0F;
+      font-family: 'Syne', sans-serif;
+      font-size: 15px; font-weight: 700; letter-spacing: .04em;
+      border: none; border-radius: 12px;
+      padding: 15px;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: transform .15s, box-shadow .2s;
+      box-shadow: 0 4px 24px rgba(0,200,120,0.3);
+    }
+    .btn-register::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+    }
+    .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,200,120,0.45); }
+    .btn-register:active { transform: translateY(0); }
+
+    .login-hint {
+      text-align: center; margin-top: 20px;
+      font-size: 13px; color: var(--muted);
+    }
+    .login-hint a { color: var(--green); text-decoration: none; font-weight: 500; }
+
+
+
+    /* errors */
+    .err { font-size: 11px; color: var(--red); margin-top: 5px; display:none; }
+
+    /* responsive */
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .left-panel { display: none; }
+      .right-panel { border-left: none; padding: 60px 24px; }
+    }
+
+    /* entrance animation */
+    .form-card { animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+    .left-panel > * { animation: fadeLeft .7s cubic-bezier(.22,1,.36,1) both; }
+    .left-panel > *:nth-child(1) { animation-delay:.05s }
+    .left-panel > *:nth-child(2) { animation-delay:.12s }
+    .left-panel > *:nth-child(3) { animation-delay:.18s }
+    .left-panel > *:nth-child(4) { animation-delay:.24s }
+    .left-panel > *:nth-child(5) { animation-delay:.30s }
+    .left-panel > *:nth-child(6) { animation-delay:.38s }
+    @keyframes fadeLeft { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:translateX(0); } }
+
+    /* flash messages */
+    .flash-msg {
+      padding: 11px 16px; border-radius: 10px; font-size: 13px;
+      margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+    }
+    .flash-error   { background: rgba(255,77,106,0.1); border: 1px solid rgba(255,77,106,0.3); color: #FF4D6A; }
+    .flash-success { background: rgba(0,200,120,0.1);  border: 1px solid rgba(0,200,120,0.3);  color: #00C878; }
+    .flash-warning { background: rgba(245,200,66,0.1); border: 1px solid rgba(245,200,66,0.3); color: #F5C842; }
+  </style>
+</head>
+<body>
+
+<!-- Ticker Bar -->
+<div class="ticker-bar">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- Page Layout -->
+<div class="page">
+
+  <!-- LEFT: Branding + Chart Mock -->
+  <div class="left-panel">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 17l5-5 4 4 5-6 4 3"/></svg>
+      </div>
+      <div class="brand-name">Stock<span>Sense</span></div>
+    </div>
+
+    <div class="hero-tag">LSTM-Powered Prediction</div>
+
+    <h1 class="hero-title">
+      Predict the<br>
+      <span class="accent">Next Move</span><br>
+      with <span class="accent2">Precision</span>
+    </h1>
+
+    <p class="hero-sub">
+      Deep-learning models trained on decades of market data. Real-time EMA signals, trend forecasting, and institutional-grade analytics at your fingertips.
+    </p>
+
+    <!-- Chart Mockup -->
+    <div class="chart-mock">
+      <div class="chart-header">
+        <div>
+          <div class="chart-ticker">POWERGRID.NS</div>
+          <div class="chart-price">₹342.60</div>
+          <div class="chart-change">▲ +2.34% today</div>
+        </div>
+        <div style="text-align:right">
+          <div class="chart-label">LSTM Forecast</div>
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--gold)">₹358.20</div>
+          <div style="font-size:11px;color:var(--muted)">7-day target</div>
+        </div>
+      </div>
+      <div class="sparkline-wrap">
+        <svg class="spark" viewBox="0 0 400 72" preserveAspectRatio="none">
+          <path class="spark-area" d="M0,60 C30,55 50,40 80,38 C110,36 130,45 160,42 C190,39 210,25 240,20 C270,15 300,28 330,22 C360,16 380,18 400,14 L400,72 L0,72 Z"/>
+          <path class="spark-line" d="M0,60 C30,55 50,40 80,38 C110,36 130,45 160,42 C190,39 210,25 240,20 C270,15 300,28 330,22 C360,16 380,18 400,14"/>
+          <path class="spark-pred" d="M300,28 C320,20 350,10 370,8 C385,7 395,9 410,6"/>
+        </svg>
+      </div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Actual</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--gold)"></div>Predicted</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>EMA 50</div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-val up">94.7%</div>
+        <div class="stat-lbl">Model Accuracy</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">25 yrs</div>
+        <div class="stat-lbl">Training Data</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val up">Live</div>
+        <div class="stat-lbl">Market Feed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Registration Form -->
+  <div class="right-panel">
+    <div class="form-card">
+      <div class="form-heading">Create Account</div>
+      <div class="form-sub">Already have one? <a href="/login">Sign in →</a></div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+          <div class="flash-msg flash-{{ cat }}">
+            {% if cat == 'success' %}✓{% elif cat == 'error' %}⚠{% else %}ℹ{% endif %} {{ msg }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form id="regForm" method="POST" action="/register" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label>First Name</label>
+            <div class="input-wrap">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="fname" name="fname" placeholder="Arjun" autocomplete="given-name"/>
+            </div>
+            <div class="err" id="fnameErr">Required</div>
+          </div>
+          <div class="field">
+            <label>Last Name</label>
+            <div class="input-wrap">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <input type="text" id="lname" name="lname" placeholder="Sharma" autocomplete="family-name"/>
+            </div>
+            <div class="err" id="lnameErr">Required</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Email Address</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" id="email" name="email" placeholder="arjun@example.com" autocomplete="email"/>
+          </div>
+          <div class="err" id="emailErr">Enter a valid email</div>
+        </div>
+
+        <div class="field">
+          <label>Phone Number</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.61 19a19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-2.89-7.9A2 2 0 0 1 4.7 3H7.7a2 2 0 0 1 2 1.72c.12 1 .36 1.96.7 2.88a2 2 0 0 1-.45 2.11L8.51 10.8a16 16 0 0 0 6 6l1.09-1.09a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.88.7A2 2 0 0 1 22 16.92z"/></svg>
+            <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210"/>
+          </div>
+        </div>
+
+        <div class="divider">Security</div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="password" name="password" placeholder="Min 8 characters" autocomplete="new-password" oninput="checkStrength(this.value)"/>
+          </div>
+          <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+          <div class="err" id="passErr">Min 8 characters</div>
+        </div>
+
+        <div class="field">
+          <label>Confirm Password</label>
+          <div class="input-wrap">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" id="confirm" name="confirm" placeholder="Repeat password" autocomplete="new-password"/>
+          </div>
+          <div class="err" id="confirmErr">Passwords do not match</div>
+        </div>
+
+        <div class="agree-row">
+          <input type="checkbox" id="agree"/>
+          <label for="agree">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I understand this is an AI-based prediction tool.</label>
+        </div>
+        <div class="err" id="agreeErr" style="margin-top:-10px;margin-bottom:14px;">Please accept terms</div>
+
+        <button type="submit" class="btn-register">Create Free Account →</button>
+      </form>
+
+      <div class="login-hint">
+        Already a member? <a href="#">Log in to StockSense</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  /* ── ticker data ── */
+  const tickers = [
+    {sym:'POWERGRID.NS', price:'₹342.60', chg:'+2.34%', up:true},
+    {sym:'RELIANCE.NS',  price:'₹2,981', chg:'+0.87%', up:true},
+    {sym:'TCS.NS',       price:'₹4,120', chg:'-0.43%', up:false},
+    {sym:'INFY.NS',      price:'₹1,893', chg:'+1.12%', up:true},
+    {sym:'HDFCBANK.NS',  price:'₹1,742', chg:'-0.21%', up:false},
+    {sym:'AAPL',         price:'$213.4', chg:'+0.55%', up:true},
+    {sym:'TSLA',         price:'$178.2', chg:'-1.30%', up:false},
+    {sym:'NVDA',         price:'$875.0', chg:'+3.12%', up:true},
+    {sym:'MSFT',         price:'$415.7', chg:'+0.38%', up:true},
+    {sym:'GOOGL',        price:'$175.3', chg:'-0.19%', up:false},
+  ];
+  const track = document.getElementById('tickerTrack');
+  const double = [...tickers, ...tickers];
+  double.forEach(t => {
+    const span = document.createElement('span');
+    span.className = 'ticker-item';
+    span.innerHTML = `${t.sym} <span class="${t.up?'up':'down'}">${t.price} ${t.chg}</span>`;
+    track.appendChild(span);
+  });
+
+  /* ── password strength ── */
+  function checkStrength(v) {
+    const bar = document.getElementById('strengthFill');
+    let score = 0;
+    if (v.length >= 8)  score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const colors = ['#FF4D6A','#FF9840','#F5C842','#00C878'];
+    const widths  = ['25%','50%','75%','100%'];
+    bar.style.width = score ? widths[score-1] : '0';
+    bar.style.background = score ? colors[score-1] : 'transparent';
+  }
+
+  /* ── form validation ── */
+  function show(id, msg) {
+    const el = document.getElementById(id);
+    if (msg) el.textContent = msg;
+    el.style.display = 'block';
+  }
+  function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+  document.getElementById('regForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    let valid = true;
+    const fname = document.getElementById('fname').value.trim();
+    const lname = document.getElementById('lname').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pass  = document.getElementById('password').value;
+    const conf  = document.getElementById('confirm').value;
+    const agree = document.getElementById('agree').checked;
+
+    if (!fname) { show('fnameErr','First name required'); valid=false; } else hide('fnameErr');
+    if (!lname) { show('lnameErr','Last name required'); valid=false; } else hide('lnameErr');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { show('emailErr','Enter a valid email'); valid=false; } else hide('emailErr');
+    if (pass.length < 8) { show('passErr','Min 8 characters'); valid=false; } else hide('passErr');
+    if (pass !== conf)   { show('confirmErr','Passwords do not match'); valid=false; } else hide('confirmErr');
+    if (!agree)          { show('agreeErr','Please accept terms'); valid=false; } else hide('agreeErr');
+
+    if (!valid) return;
+
+    // All valid — update button and actually submit to Flask
+    const btn = this.querySelector('.btn-register');
+    btn.textContent = 'Creating Account…';
+    btn.style.opacity = '.7';
+    btn.disabled = true;
+    this.submit();
+  });
+</script>
+</body>
+</html>
