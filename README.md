@@ -25,7 +25,7 @@ StockSense is a Flask-based stock analytics app with:
 
 ## Demo Notes
 
-- Default database is SQLite at `instance/users.db` (no MySQL required).
+- Default database is SQLite at `instance/users.db`.
 - If `stock_dl_model.h5` is missing, prediction routes degrade gracefully.
 - Optional sentiment API key:
   - Set `GNEWS_API_KEY` in environment to enable GNews headlines.
